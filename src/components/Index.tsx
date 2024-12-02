@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import AuthSystem from './auth';
+import AuthSystem from './Utilities/auth';
 
 const Index = () => {
 

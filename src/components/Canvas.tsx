@@ -309,7 +309,7 @@ const Canvas = () => {
                 className="relative flex-grow bg-gray-50"
                 onContextMenu={(e) => e.preventDefault()}
                 onClick={handleClickOutside}
-            >
+            > 
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full"
