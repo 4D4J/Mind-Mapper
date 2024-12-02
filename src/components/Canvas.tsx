@@ -131,6 +131,9 @@ const Canvas = () => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
         }
+        if (event.key === 'l') {
+            // l'actions d'appuyer sur l fais comme si on appuie sur le bouton connect node
+        }
         console.log(event.key);
     }, [deleteSelectedNode]);
 
