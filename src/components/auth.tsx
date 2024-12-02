@@ -78,7 +78,7 @@ const AuthSystem: React.FC = () => {
   // page de connexion
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
+      <div className="flex justify-center items-center h-screen bg-gray-100 h-[550px]">
         <Card className="flex flex-col w-[550px] justify-center items-center">
           <CardHeader>
             <CardTitle>{isLogin ? 'Connexion' : 'Inscription'}</CardTitle>
@@ -156,7 +156,7 @@ const AuthSystem: React.FC = () => {
   // Écran après connexion
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100 ">
+        <div className="flex justify-center items-center h-screen bg-gray-100 h-[550px]">
             <Card className="flex flex-col w-[550px] justify-center items-center">
                 <CardHeader>
                     <CardTitle>Welcome</CardTitle>
