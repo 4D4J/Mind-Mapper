@@ -1,5 +1,12 @@
 # Mind Mapper
 
+## 🚨🚨 Read this before testing the app 🚨🚨!
+
+**MindMapper is under development, some features are missing and you may encounter bugs.** 
+**If this is the case, I invite you to do an Issues**
+
+## What is MindMapper ?
+
 Mind Mapper is an intuitive and lightweight application for organizing your ideas and projects in the form of mind maps. Whether you're a student, professional, or creative, this tool helps you visualize your thoughts, structure your plans, and collaborate effectively.
 
 Key Features:
