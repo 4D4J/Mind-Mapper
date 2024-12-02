@@ -11,4 +11,6 @@ Key Features:
 
 Start structuring your ideas with Mind Mapper today and boost your productivity!
 
-![Footage](https://github.com/user-attachments/assets/0bbfb28d-f8a8-4693-a705-8ff8c7819429)
+
+![Footage](https://github.com/user-attachments/assets/d6d85204-9a27-4fba-93b9-2eb280f63f73)
+
