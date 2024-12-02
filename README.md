@@ -10,3 +10,5 @@ Key Features:
   - Simple and user-friendly interface.
 
 Start structuring your ideas with Mind Mapper today and boost your productivity!
+
+![Footage](https://github.com/user-attachments/assets/0bbfb28d-f8a8-4693-a705-8ff8c7819429)
