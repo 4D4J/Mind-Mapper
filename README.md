@@ -9,3 +9,5 @@ Key Features:
   - Export in various formats (PNG, PDF, JSON).
   - Simple and user-friendly interface.
 Start structuring your ideas with Mind Mapper today and boost your productivity!
+
+![Footage](https://github.com/user-attachments/assets/e1757644-55c0-4fd4-bfc1-427c53315aaa)
