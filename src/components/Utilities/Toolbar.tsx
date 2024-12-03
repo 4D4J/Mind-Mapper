@@ -135,8 +135,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
                         <li>Right Click to add a Node</li>
                         <li>Drag and drop a Node to move it</li>
                         <li>Double-click on a Node to edit the default text</li>
-                        <li>Delete a Node by selecting it and clicking on the "Delete Node"</li>
-                        <li>Connect Nodes by selecting the start Node, clicking on "Connect Node" and then selecting the end Node</li>
+                        <li>Delete a Node by selecting it and clicking on the "Delete Node" or using the key `suppr`</li>
+                        <li>Connect Nodes by selecting the start Node, clicking on "Connect Node" or clicking on `L` and then selecting the end Node</li>
                         <li>Change the color of a Node by selecting it and then clicking on the color picker</li>
                         <li>Use the button "Zoom +" and "Zoom -" to zoom in and out</li>
                         <li>Export your MindApp by clicking on "Export MindApp"</li>

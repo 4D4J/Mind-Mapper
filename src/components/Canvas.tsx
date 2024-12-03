@@ -108,6 +108,13 @@ const Canvas = () => {
 
         ctx.restore();
     };
+    
+    const handleConnectNode = () => {
+        if (selectedNodeId !== null) {
+            setConnectingNodeId(selectedNodeId);
+        }
+    };
+
 
     const changeNodeColor = (nodeId: number, newColor: string) => {
         setNodes(prevNodes => 
@@ -132,10 +139,10 @@ const Canvas = () => {
             deleteSelectedNode();
         }
         if (event.key === 'l') {
-            // l'actions d'appuyer sur l fais comme si on appuie sur le bouton connect node
+            handleConnectNode();
         }
         console.log(event.key);
-    }, [deleteSelectedNode]);
+    }, [deleteSelectedNode, handleConnectNode]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (e.button === 2) {
@@ -216,12 +223,6 @@ const Canvas = () => {
             setDraggingNodeId(nodeId);
             setIsDragging(true);
             setSelectedNodeId(nodeId);
-        }
-    };
-
-    const handleConnectNode = () => {
-        if (selectedNodeId !== null) {
-            setConnectingNodeId(selectedNodeId);
         }
     };
 
