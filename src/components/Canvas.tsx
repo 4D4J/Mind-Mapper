@@ -307,9 +307,11 @@ const Canvas = () => {
                 onZoomOut={handleZoomOut}
                 onExport={handleExport}
                 onImport={handleImport}
+                canvasRef={canvasRef}
             />
 
             <div
+                id="mindapp-container"
                 className="relative flex-grow bg-gray-50"
                 onContextMenu={(e) => e.preventDefault()}
                 onClick={handleClickOutside}

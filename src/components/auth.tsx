@@ -78,7 +78,7 @@ const AuthSystem: React.FC = () => {
   // page de connexion
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100 h-[550px]">
+      <div className="flex justify-center items-center bg-gray-100 h-[600px]">
         <Card className="flex flex-col w-[550px] justify-center items-center">
           <CardHeader>
             <CardTitle>{isLogin ? 'Connexion' : 'Inscription'}</CardTitle>
@@ -134,7 +134,7 @@ const AuthSystem: React.FC = () => {
                   <p className="text-red-500 text-sm">{error}</p>
                 )}
               </div>
-              <CardFooter className="flex justify-between mt-4">
+              <CardFooter className="flex justify-arround mt-4 bg-emerald-600">
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -156,7 +156,7 @@ const AuthSystem: React.FC = () => {
   // Écran après connexion
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100 h-[550px]">
+        <div className="flex justify-center items-center bg-gray-100 h-[600px]">
             <Card className="flex flex-col w-[550px] justify-center items-center">
                 <CardHeader>
                     <CardTitle>Welcome</CardTitle>
@@ -164,8 +164,8 @@ const AuthSystem: React.FC = () => {
             <CardContent>
               <p>Connected on : {user.pseudo}</p>
         </CardContent>
-        <CardFooter>
-          <Button onClick={handleLogout} className="w-full">
+        <CardFooter className='flex justify-center bg-emerald-600'>
+          <Button onClick={handleLogout} className="w-full">  
             Déconnexion
           </Button>
           <Button onClick={GoCanvas} className='w-full'>
