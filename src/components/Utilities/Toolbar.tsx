@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import AuthSystem from '../auth';
+import AuthSystem from './auth';
 import Export from '../Utilities/Export';
 import html2canvas from 'html2canvas';
-
 
 interface ToolbarProps {
     selectedNodeId: number | null;
@@ -75,7 +74,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 <>
                     <button
                         onClick={handleAccountClick}
-                        className="flex flex-row justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-colors"
+                        disabled={true}
+                        className=" cursor-not-allowed opacity-50 flex flex-row justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-colors"
                     >
                         <img src="../img/icon/account_icon.svg" alt="Account" />
                         Account
@@ -179,6 +179,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     </ul>
                 </div>
             )}
+            
             {/* Export Modal */}
             {showExport && (
                 <Export

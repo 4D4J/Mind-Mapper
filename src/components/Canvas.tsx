@@ -30,21 +30,21 @@ const Canvas = () => {
         setNodes((prevNodes) => [...prevNodes, node]);
     };
 
-    const deleteSelectedNode = () => {
+    const deleteSelectedNode = useCallback(() => {
         if (selectedNodeId === null) return;
-
+    
         const connectedLinks = links.filter(
             (link) =>
                 link.source === selectedNodeId || link.target === selectedNodeId
         );
-
+    
         if (connectedLinks.length === 2) {
             const [link1, link2] = connectedLinks;
             const nodeId1 =
                 link1.source === selectedNodeId ? link1.target : link1.source;
             const nodeId2 =
                 link2.source === selectedNodeId ? link2.target : link2.source;
-
+    
             if (nodeId1 !== nodeId2) {
                 const newLink: Link = {
                     source: nodeId1,
@@ -76,14 +76,14 @@ const Canvas = () => {
                 )
             );
         }
-
+    
         setNodes((prevNodes) =>
             prevNodes.filter((node) => node.id !== selectedNodeId)
         );
         setSelectedNodeId(null);
-    };
+    }, [selectedNodeId, links]);
 
-    const drawLinks = () => {
+    const drawLinks = useCallback(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!canvas || !ctx) return;
@@ -107,13 +107,13 @@ const Canvas = () => {
         });
 
         ctx.restore();
-    };
+    }, [zoom, links, nodes]);
     
-    const handleConnectNode = () => {
+    const handleConnectNode = useCallback(() => {
         if (selectedNodeId !== null) {
             setConnectingNodeId(selectedNodeId);
         }
-    };
+    }, [selectedNodeId]);
 
 
     const changeNodeColor = (nodeId: number, newColor: string) => {
@@ -253,6 +253,7 @@ const Canvas = () => {
         }
     };
 
+
     useEffect(() => {
         drawLinks();
         
@@ -294,7 +295,7 @@ const Canvas = () => {
             window.removeEventListener('mousemove', handleWindowMouseMove);
             window.removeEventListener('keydown', handleKeyPress);
         };
-    }, [isDragging, draggingNodeId, zoom, handleKeyPress, links, nodes]);
+    }, [isDragging, draggingNodeId, zoom, handleKeyPress, links, nodes, drawLinks]);
 
     return (
         <div className="flex flex-col h-screen">
@@ -315,7 +316,7 @@ const Canvas = () => {
                 className="relative flex-grow bg-gray-50"
                 onContextMenu={(e) => e.preventDefault()}
                 onClick={handleClickOutside}
-            >
+            > 
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full"
