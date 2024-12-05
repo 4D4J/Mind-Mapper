@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AuthSystem from '../auth';
+import AuthSystem from './auth';
 import Export from '../Utilities/Export';
 import html2canvas from 'html2canvas';
 
@@ -179,6 +179,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     </ul>
                 </div>
             )}
+            
             {/* Export Modal */}
             {showExport && (
                 <Export
