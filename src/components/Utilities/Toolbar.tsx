@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import AuthSystem from './auth';
+import Export from '../Utilities/Export';
+import html2canvas from 'html2canvas';
 
 interface ToolbarProps {
     selectedNodeId: number | null;
@@ -10,6 +12,7 @@ interface ToolbarProps {
     onZoomOut: () => void;
     onExport: () => void;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    canvasRef: React.RefObject<HTMLCanvasElement>; 
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -20,10 +23,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
     onZoomIn,
     onZoomOut,
     onExport,
-    onImport
+    onImport,
+    //canvasRef
+
 }) => {
     const [showAuth, setShowAuth] = useState(false);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [showExport, setShowExport] = useState(false);
 
     const handleAccountClick = () => {
         setShowAuth(true);
@@ -32,6 +38,34 @@ const Toolbar: React.FC<ToolbarProps> = ({
     const handleHideInstructions = () => {
         setShowInstructions(false);
     };
+
+    const handleExportClick = () => {
+        setShowExport(true);
+    };
+
+    const handleCloseExport = () => {
+        setShowExport(false);
+    };
+
+    const handleExport_JSON = () => {
+        onExport();
+        setShowExport(false);
+    };
+
+    const handleExport_PICTURE = () => {
+        const element = document.getElementById('mindapp-container');
+        if (element) {
+            html2canvas(element).then((canvas) => {
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');   
+                link.href = dataURL;
+                link.download = 'mindapp.png';
+                link.click();
+            });
+        }
+        setShowExport(false);
+    };
+    
 
     return (
         <>
@@ -86,7 +120,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     Connect node
                 </button>
                 <button
-                    onClick={onExport}
+                    onClick={handleExportClick}
                     className=" flex flex-row justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-colors"
                 >
                     <img src="../img/icon/save_icon.svg" alt="Export MindApp" />
@@ -136,14 +170,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
                         <li>Right Click to add a Node</li>
                         <li>Drag and drop a Node to move it</li>
                         <li>Double-click on a Node to edit the default text</li>
-                        <li>Delete a Node by selecting it and clicking on the "Delete Node"</li>
-                        <li>Connect Nodes by selecting the start Node, clicking on "Connect Node" and then selecting the end Node</li>
+                        <li>Delete a Node by selecting it and clicking on the "Delete Node" or using the key `suppr`</li>
+                        <li>Connect Nodes by selecting the start Node, clicking on "Connect Node" or clicking on `L` and then selecting the end Node</li>
                         <li>Change the color of a Node by selecting it and then clicking on the color picker</li>
                         <li>Use the button "Zoom +" and "Zoom -" to zoom in and out</li>
                         <li>Export your MindApp by clicking on "Export MindApp"</li>
                         <li>Import a MindApp by clicking on "Import MindApp"</li>
                     </ul>
                 </div>
+            )}
+            
+            {/* Export Modal */}
+            {showExport && (
+                <Export
+                    onClose={handleCloseExport}
+                    onExport_JSON={handleExport_JSON}
+                    onExport_PNG={handleExport_PICTURE}
+                />
             )}
         </>
     );

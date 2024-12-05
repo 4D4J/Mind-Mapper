@@ -30,21 +30,21 @@ const Canvas = () => {
         setNodes((prevNodes) => [...prevNodes, node]);
     };
 
-    const deleteSelectedNode = () => {
+    const deleteSelectedNode = useCallback(() => {
         if (selectedNodeId === null) return;
-
+    
         const connectedLinks = links.filter(
             (link) =>
                 link.source === selectedNodeId || link.target === selectedNodeId
         );
-
+    
         if (connectedLinks.length === 2) {
             const [link1, link2] = connectedLinks;
             const nodeId1 =
                 link1.source === selectedNodeId ? link1.target : link1.source;
             const nodeId2 =
                 link2.source === selectedNodeId ? link2.target : link2.source;
-
+    
             if (nodeId1 !== nodeId2) {
                 const newLink: Link = {
                     source: nodeId1,
@@ -76,14 +76,14 @@ const Canvas = () => {
                 )
             );
         }
-
+    
         setNodes((prevNodes) =>
             prevNodes.filter((node) => node.id !== selectedNodeId)
         );
         setSelectedNodeId(null);
-    };
+    }, [selectedNodeId, links]);
 
-    const drawLinks = () => {
+    const drawLinks = useCallback(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!canvas || !ctx) return;
@@ -107,7 +107,14 @@ const Canvas = () => {
         });
 
         ctx.restore();
-    };
+    }, [zoom, links, nodes]);
+    
+    const handleConnectNode = useCallback(() => {
+        if (selectedNodeId !== null) {
+            setConnectingNodeId(selectedNodeId);
+        }
+    }, [selectedNodeId]);
+
 
     const changeNodeColor = (nodeId: number, newColor: string) => {
         setNodes(prevNodes => 
@@ -131,8 +138,11 @@ const Canvas = () => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
         }
+        if (event.key === 'l') {
+            handleConnectNode();
+        }
         console.log(event.key);
-    }, [deleteSelectedNode]);
+    }, [deleteSelectedNode, handleConnectNode]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (e.button === 2) {
@@ -216,12 +226,6 @@ const Canvas = () => {
         }
     };
 
-    const handleConnectNode = () => {
-        if (selectedNodeId !== null) {
-            setConnectingNodeId(selectedNodeId);
-        }
-    };
-
     const handleExport = () => {
         const data = JSON.stringify({ nodes, links });
         const blob = new Blob([data], { type: 'application/json' });
@@ -248,6 +252,7 @@ const Canvas = () => {
             reader.readAsText(file);
         }
     };
+
 
     useEffect(() => {
         drawLinks();
@@ -290,7 +295,7 @@ const Canvas = () => {
             window.removeEventListener('mousemove', handleWindowMouseMove);
             window.removeEventListener('keydown', handleKeyPress);
         };
-    }, [isDragging, draggingNodeId, zoom, handleKeyPress, links, nodes]);
+    }, [isDragging, draggingNodeId, zoom, handleKeyPress, links, nodes, drawLinks]);
 
     return (
         <div className="flex flex-col h-screen">
@@ -303,9 +308,11 @@ const Canvas = () => {
                 onZoomOut={handleZoomOut}
                 onExport={handleExport}
                 onImport={handleImport}
+                canvasRef={canvasRef}
             />
 
             <div
+                id="mindapp-container"
                 className="relative flex-grow bg-gray-50"
                 onContextMenu={(e) => e.preventDefault()}
                 onClick={handleClickOutside}
