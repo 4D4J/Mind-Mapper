@@ -15,7 +15,7 @@ const Export: React.FC<ExportProps> = ({ onClose, onExport_JSON, onExport_PNG })
                 </button>
                 <h2 className="text-xl font-bold mb-4">Export Options</h2>
                 <button onClick={onExport_JSON} className="bg-purple-600 text-white rounded-lg p-2 mb-2 hover:bg-purple-800 transition-colors">
-                    Export in Json
+                    Export in JSON
                 </button>
                 <button onClick={onExport_PNG} className="bg-purple-600 text-white rounded-lg p-2 hover:bg-purple-800 transition-colors">
                     Export in PNG

@@ -137,11 +137,16 @@ const Canvas = () => {
     const handleKeyPress = useCallback((event: KeyboardEvent) => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
+            console.log("delete button pressed and node is deleted")
         }
         if (event.key === 'l') {
             handleConnectNode();
+            console.log("l button pressed and node are connected")
         }
-        console.log(event.key);
+        if (event.key === 'Ctrl' || event.key === 'v') {
+            console.log('Ctrl + V pressed')
+        }
+        // console.log(event.key);
     }, [deleteSelectedNode, handleConnectNode]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
