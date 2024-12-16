@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import Toolbar from '../components/Utilities/Toolbar';
+import Popup from '../components/ui/popup_RC';
 
 interface Node {
     id: number;
@@ -25,9 +26,42 @@ const Canvas = () => {
     const [editingText, setEditingText] = useState<string>('');
     const [zoom, setZoom] = useState(1);
     const [connectingNodeId, setConnectingNodeId] = useState<number | null>(null);
+    const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
 
     const addNode = (node: Node) => {
         setNodes((prevNodes) => [...prevNodes, node]);
+    };
+
+    const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        const { clientX, clientY } = e;
+        setPopupPosition({ x: clientX, y: clientY });
+    };
+
+    const handleClosePopup = () => {
+        setPopupPosition(null);
+    };
+
+    const handleAddNode = () => {
+        if (popupPosition) {
+            const canvas = canvasRef.current;
+            const canvasRect = canvas?.getBoundingClientRect();
+            
+            if (canvasRect) {
+                const x = (popupPosition.x - canvasRect.left) / zoom;
+                const y = (popupPosition.y - canvasRect.top) / zoom;
+    
+                const newNode = {
+                    id: Date.now(),
+                    x: x,
+                    y: y,
+                    text: 'New idea',
+                    color: '#FFFFFF',
+                };
+                addNode(newNode);
+                handleClosePopup();
+            }
+        }
     };
 
     const deleteSelectedNode = useCallback(() => {
@@ -115,7 +149,6 @@ const Canvas = () => {
         }
     }, [selectedNodeId]);
 
-
     const changeNodeColor = (nodeId: number, newColor: string) => {
         setNodes(prevNodes => 
             prevNodes.map(node => 
@@ -137,30 +170,14 @@ const Canvas = () => {
     const handleKeyPress = useCallback((event: KeyboardEvent) => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
-            console.log("delete button pressed and node is deleted")
         }
         if (event.key === 'l') {
             handleConnectNode();
-            console.log("l button pressed and node are connected")
         }
-        if (event.key === 'Ctrl' || event.key === 'v') {
-            console.log('Ctrl + V pressed')
-        }
-        // console.log(event.key);
     }, [deleteSelectedNode, handleConnectNode]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (e.button === 2) {
-            const { offsetX, offsetY } = e.nativeEvent;
-            const newNode = {
-                id: Date.now(),
-                x: offsetX / zoom,
-                y: offsetY / zoom,
-                text: 'New idea',
-                color: '#FFFFFF',
-            };
-            addNode(newNode);
-        }
+        if (e.button === 2) return; 
     };
 
     const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -169,6 +186,11 @@ const Canvas = () => {
             return;
         }
         setSelectedNodeId(null);
+        
+
+        if (!target.closest('.popup')) {
+            setPopupPosition(null);
+        }
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -258,7 +280,6 @@ const Canvas = () => {
         }
     };
 
-
     useEffect(() => {
         drawLinks();
         
@@ -326,6 +347,7 @@ const Canvas = () => {
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full"
                     onMouseDown={handleMouseDown}
+                    onContextMenu={handleContextMenu}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                 />
@@ -373,6 +395,15 @@ const Canvas = () => {
                         )}
                     </div>
                 ))}
+
+                {popupPosition && (
+                    <Popup
+                        x={popupPosition.x}
+                        y={popupPosition.y}
+                        onAddNode={handleAddNode}
+                        onClose={handleClosePopup}
+                    />
+                )}
             </div>
         </div>
     );
