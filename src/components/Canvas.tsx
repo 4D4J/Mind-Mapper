@@ -10,27 +10,47 @@ interface Node {
     color: string;
 }
 
+interface Breakpoint {
+    id: number
+    x: number
+    y: number
+}
+
 interface Link {
     source: number;
     target: number;
 }
 
+
+
 const Canvas = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
+    const [zoom, setZoom] = useState(1);
+
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
+    const [bp, setBP] = useState<Breakpoint[]>([]);
+
+    const [isDragging, setIsDragging] = useState(false);
     const [draggingNodeId, setDraggingNodeId] = useState<number | null>(null);
     const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
     const [editingNodeId, setEditingNodeId] = useState<number | null>(null);   
     const [editingText, setEditingText] = useState<string>('');
-    const [zoom, setZoom] = useState(1);
     const [connectingNodeId, setConnectingNodeId] = useState<number | null>(null);
+
+    const [draggingBPid, setDraggingBPid] = useState<number | null>(null);
+    const [selectedBPid, setSelectedBPid] = useState<number | null>(null);
+    const [connectingBPid, setConnectingBPid] = useState<number | null>(null);
+
     const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
+
 
     const addNode = (node: Node) => {
         setNodes((prevNodes) => [...prevNodes, node]);
     };
+    const addBP = (bp: Breakpoint) => {
+        setBP((prevBP) => [...prevBP, bp])
+    }
 
     const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
         e.preventDefault();
@@ -63,6 +83,78 @@ const Canvas = () => {
             }
         }
     };
+    const handleAddBP = () => {
+        if (popupPosition) {
+            const canvas = canvasRef.current;
+            const canvasRect = canvas?.getBoundingClientRect();
+            
+            if (canvasRect) {
+                const x = (popupPosition.x - canvasRect.left) / zoom;
+                const y = (popupPosition.y - canvasRect.top) / zoom;
+    
+                const newBP = {
+                    id: Date.now(),
+                    x: x,
+                    y: y,
+                };
+                addBP(newBP);
+                handleClosePopup();
+            }
+        }
+    };
+
+    const deleteSelectedBP = useCallback(() => {
+        if (selectedBPid === null) return;
+    
+        const connectedLinks = links.filter(
+            (link) =>
+                link.source === selectedBPid || link.target === selectedBPid
+        );
+    
+        if (connectedLinks.length === 2) {
+            const [link1, link2] = connectedLinks;
+            const bpId1 =
+                link1.source === selectedBPid ? link1.target : link1.source;
+            const bpId2 =
+                link2.source === selectedBPid ? link2.target : link2.source;
+    
+            if (bpId1 !== bpId2) {
+                const newLink: Link = {
+                    source: bpId1,
+                    target: bpId2,
+                };
+                setLinks((prevLinks) => [
+                    ...prevLinks.filter(
+                        (link) =>
+                            link.source !== selectedBPid &&
+                            link.target !== selectedBPid
+                    ),
+                    newLink,
+                ]);
+            } else {
+                setLinks((prevLinks) =>
+                    prevLinks.filter(
+                        (link) =>
+                            link.source !== selectedBPid &&
+                            link.target !== selectedBPid
+                    )
+                );
+            }
+        } else {
+            setLinks((prevLinks) =>
+                prevLinks.filter(
+                    (link) =>
+                        link.source !== selectedBPid &&
+                        link.target !== selectedBPid
+                )
+            );
+        }
+    
+        setBP((prevBP) =>
+            prevBP.filter((bp) => bp.id !== selectedBPid)
+        );
+        setSelectedBPid(null);
+    }, [selectedBPid, links]);
 
     const deleteSelectedNode = useCallback(() => {
         if (selectedNodeId === null) return;
@@ -130,6 +222,9 @@ const Canvas = () => {
             const sourceNode = nodes.find((node) => node.id === link.source);
             const targetNode = nodes.find((node) => node.id === link.target);
 
+            const sourceBP = bp.find((bp) => bp.id === link.source);
+            const targetBP = bp.find((bp) => bp.id === link.target);
+
             if (sourceNode && targetNode) {
                 ctx.beginPath();
                 ctx.moveTo(sourceNode.x, sourceNode.y);
@@ -137,17 +232,48 @@ const Canvas = () => {
                 ctx.strokeStyle = '#64748b';
                 ctx.lineWidth = 2 / zoom;
                 ctx.stroke(); 
+            } else {
+                if (sourceBP && targetBP){
+                    ctx.beginPath();
+                    ctx.moveTo(sourceBP.x, sourceBP.y);
+                    ctx.lineTo(targetBP.x, targetBP.y);
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 2 / zoom;
+                    ctx.stroke();
+                } else {
+                    if (sourceNode && targetBP) {
+                        ctx.beginPath();
+                        ctx.moveTo(sourceNode.x, sourceNode.y);
+                        ctx.lineTo(targetBP.x, targetBP.y);
+                        ctx.strokeStyle = '#64748b';
+                        ctx.lineWidth = 2 / zoom;
+                        ctx.stroke();
+                    } else {
+                        if (sourceBP && targetNode) {
+                            ctx.beginPath();
+                            ctx.moveTo(sourceBP.x, sourceBP.y);
+                            ctx.lineTo(targetNode.x, targetNode.y);
+                            ctx.strokeStyle = '#64748b';
+                            ctx.lineWidth = 2 / zoom;
+                            ctx.stroke(); 
+                        }   
+                    }
+                }
             }
         });
-
         ctx.restore();
-    }, [zoom, links, nodes]);
+    }, [zoom, links, nodes, bp]);
     
     const handleConnectNode = useCallback(() => {
         if (selectedNodeId !== null) {
             setConnectingNodeId(selectedNodeId);
         }
     }, [selectedNodeId]);
+    const handelConnectBP = useCallback(() => {
+        if (selectedBPid !== null) {
+            setConnectingBPid(selectedBPid);
+        }
+    }, [selectedBPid]);
 
     const changeNodeColor = (nodeId: number, newColor: string) => {
         setNodes(prevNodes => 
@@ -170,11 +296,13 @@ const Canvas = () => {
     const handleKeyPress = useCallback((event: KeyboardEvent) => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
+            deleteSelectedBP();
         }
         if (event.key === 'l') {
             handleConnectNode();
+            handelConnectBP();
         }
-    }, [deleteSelectedNode, handleConnectNode]);
+    }, [deleteSelectedNode, deleteSelectedBP, handleConnectNode, handelConnectBP]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (e.button === 2) return; 
@@ -182,11 +310,13 @@ const Canvas = () => {
 
     const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        if (target.closest('button') || target.closest('.node-box')) {
+        if (target.closest('button') || target.closest('.node-box') || target.closest('.bp-box')) {
             return;
         }
         setSelectedNodeId(null);
-        
+        setSelectedBPid(null);
+        setConnectingNodeId(null);
+        setConnectingBPid(null);
 
         if (!target.closest('.popup')) {
             setPopupPosition(null);
@@ -194,7 +324,7 @@ const Canvas = () => {
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDragging || draggingNodeId === null) return;
+        if (!isDragging || draggingNodeId || draggingBPid=== null) return;
         const { clientX, clientY } = e;
         const canvasRect = canvasRef.current?.getBoundingClientRect();
         if (!canvasRect) return;
@@ -203,11 +333,15 @@ const Canvas = () => {
         setNodes((prevNodes) => prevNodes.map(node => 
             node.id === draggingNodeId ? { ...node, x: offsetX, y: offsetY } : node
         ));
+        setBP((prevBP) => prevBP.map(bp =>
+            bp.id === draggingBPid ? { ...bp, x:offsetX, y: offsetY } : bp
+        ))
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
         setDraggingNodeId(null);
+        setDraggingBPid(null);
     };
 
     const handleNodeDoubleClick = (nodeId: number, text: string) => {
@@ -234,7 +368,7 @@ const Canvas = () => {
 
     const handleNodeMouseDown = (
         e: React.MouseEvent<HTMLDivElement>,
-        nodeId: number
+        nodeId: number,
     ) => {
         e.stopPropagation();
         if (connectingNodeId !== null) {
@@ -248,10 +382,35 @@ const Canvas = () => {
             setConnectingNodeId(null);
         } else {
             setDraggingNodeId(nodeId);
-            setIsDragging(true);
             setSelectedNodeId(nodeId);
+
+            setIsDragging(true);
+
         }
     };
+
+    const handleBPMouseDown = (
+        e: React.MouseEvent<HTMLDivElement>,
+        bpId: number
+    ) => {
+        e.stopPropagation();
+        if (connectingBPid !== null) {
+            if (connectingBPid !== bpId) {
+                const newLink: Link = {
+                    source: connectingBPid,
+                    target: bpId,
+                };
+                setLinks((prevLinks) => [...prevLinks, newLink]);
+            }
+            setConnectingBPid(null);
+        } else {
+            setDraggingBPid(bpId);
+            setSelectedBPid(bpId);
+
+            setIsDragging(true);
+        }
+    };
+
 
     const handleExport = () => {
         const data = JSON.stringify({ nodes, links });
@@ -286,6 +445,7 @@ const Canvas = () => {
         const handleWindowMouseUp = () => {
             setIsDragging(false);
             setDraggingNodeId(null);
+            setDraggingBPid(null)
         };
 
         const handleWindowMouseMove = (e: MouseEvent) => {
@@ -298,6 +458,9 @@ const Canvas = () => {
             setNodes((prevNodes) => prevNodes.map(node => 
                 node.id === draggingNodeId ? { ...node, x: offsetX, y: offsetY } : node
             ));
+            setBP((prevBP) => prevBP.map(bp =>
+                bp.id === draggingBPid ? { ...bp, x: offsetX, y: offsetY } : bp
+            ))
         };
 
         const updateCanvasSize = () => {
@@ -321,15 +484,20 @@ const Canvas = () => {
             window.removeEventListener('mousemove', handleWindowMouseMove);
             window.removeEventListener('keydown', handleKeyPress);
         };
-    }, [isDragging, draggingNodeId, zoom, handleKeyPress, links, nodes, drawLinks]);
+    }, [isDragging, draggingNodeId, draggingBPid,  zoom, handleKeyPress, links, nodes, bp, drawLinks]);
 
     return (
         <div className="flex flex-col h-screen">
             <Toolbar 
                 selectedNodeId={selectedNodeId}
+                selectedBPid={selectedBPid}
                 zoom={zoom}
                 onDeleteNode={deleteSelectedNode}
                 onConnectNode={handleConnectNode}
+
+                onDeleteBP={deleteSelectedBP}
+                onConnectBP={handelConnectBP}
+
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}
                 onExport={handleExport}
@@ -396,11 +564,31 @@ const Canvas = () => {
                     </div>
                 ))}
 
+                {bp.map((bp) => (
+                    <div
+                        key={bp.id}
+                        className={`bp-box absolute px-4 py-2 rounded-lg shadow-md transition-shadow cursor-pointer ${
+                            selectedBPid === bp.id
+                                ? 'border-dashed border-2 border-emerald-600'
+                                : ''
+                        }`}
+                        style={{
+                            left: `${bp.x * zoom}px`,
+                            top: `${bp.y * zoom}px`,
+                            transform: `translate(-50%, -50%) scale(${zoom})`,
+                            backgroundColor: '#BBCA',
+                        }}
+                        onMouseDown={(e) => (handleBPMouseDown(e, bp.id), console.log(e, bp.id, selectedBPid))}
+                    >
+                    </div>
+                ))}
+
                 {popupPosition && (
                     <Popup
                         x={popupPosition.x}
                         y={popupPosition.y}
                         onAddNode={handleAddNode}
+                        onAddBP={handleAddBP}
                         onClose={handleClosePopup}
                     />
                 )}

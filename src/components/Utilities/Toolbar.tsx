@@ -6,9 +6,14 @@ import html2canvas from 'html2canvas';
 
 interface ToolbarProps {
     selectedNodeId: number | null;
+    selectedBPid: number | null;
     zoom: number;
     onDeleteNode: () => void;
     onConnectNode: () => void;
+
+    onDeleteBP: () => void;
+    onConnectBP: () => void;
+
     onZoomIn: () => void;
     onZoomOut: () => void;
     onExport: () => void;
@@ -18,14 +23,18 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = ({
     selectedNodeId,
+    selectedBPid,
     zoom,
     onDeleteNode,
     onConnectNode,
+
+    onDeleteBP,
+    onConnectBP,
+
     onZoomIn,
     onZoomOut,
     onExport,
     onImport,
-    //canvasRef
 
 }) => {
     const [showAuth, setShowAuth] = useState(false);
@@ -97,28 +106,28 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     )}
                 </>
                 <button
-                    onClick={onDeleteNode}
-                    disabled={selectedNodeId === null}
+                    onClick={onDeleteNode || onDeleteBP}
+                    disabled={selectedNodeId === null || selectedBPid === null}
                     className={` flex flex-row justify-center items-center px-4 py-2 rounded-lg ${
-                        selectedNodeId === null
+                        selectedNodeId === null || selectedBPid == null
                             ? 'bg-gray-200 cursor-not-allowed'
                             : 'bg-red-500 hover:bg-red-600 text-white'
                     } transition-colors`}
                 >
                     <img src="../img/icon/remove_icon.svg" alt="Delete Node" />
-                    Delete Node
+                    Delete Node or BP
                 </button>
                 <button
-                    onClick={onConnectNode}
-                    disabled={selectedNodeId === null}
+                    onClick={onConnectNode || onConnectBP}
+                    disabled={selectedNodeId === null || selectedBPid === null}
                     className={` flex flex-row justify-center items-center px-4 py-2 rounded-lg ${
-                        selectedNodeId === null
+                        selectedNodeId === null || selectedBPid === null
                             ? 'bg-gray-200 cursor-not-allowed'
                             : 'bg-teal-600 hover:bg-teal-800 text-white'
                     } transition-colors`}
                 >
                     <img src="../img/icon/connect_icon.svg" alt="Connect Node" />
-                    Connect node
+                    Connect Node or BP
                 </button>
                 <button
                     onClick={handleExportClick}
@@ -152,7 +161,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     Zoom -
                 </button>
                 <span className="self-center">
-                    Zoom: {Math.round(zoom * 100)}%
+                    Zoom: {Math.round(zoom * 100)}
                 </span>
             </div>
 
