@@ -75,8 +75,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 <>
                     <button
                         onClick={handleAccountClick}
-                        disabled={true}
-                        className=" cursor-not-allowed opacity-50 flex flex-row justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-colors"
+                        disabled={false}
+                        className="flex flex-row justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-colors"
                     >
                         <img src="../img/icon/account_icon.svg" alt="Account" />
                         Account
