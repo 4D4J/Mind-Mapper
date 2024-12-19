@@ -395,7 +395,6 @@ const Canvas = () => {
                     onColorChange={changeNodeColor}
                     onStyleChange={handleStyleChange}
                 />
-            
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full"
@@ -487,4 +486,4 @@ const Canvas = () => {
 
 export default Canvas;
 
-// work in progress
+// Work in progress
