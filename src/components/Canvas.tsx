@@ -233,7 +233,6 @@ const Canvas = () => {
     const handleMouseUp = () => {
     setIsDragging(false);
     setDraggingNodeId(null);
-    setIsNodeDragging(false);
     };
     const handleNodeDoubleClick = (nodeId: number, text: string) => {
         setEditingNodeId(nodeId);
@@ -487,3 +486,4 @@ const Canvas = () => {
 
 export default Canvas;
 
+// Work in progress
