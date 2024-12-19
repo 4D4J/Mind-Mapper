@@ -486,8 +486,4 @@ const Canvas = () => {
 
 export default Canvas;
 
-<<<<<<< HEAD
-// Work in progress
-=======
-// Work in progress
->>>>>>> dd9d8e52746452cdcc0d601ec6fcc041e7abd6a6
+
