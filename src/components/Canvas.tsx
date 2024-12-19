@@ -20,7 +20,7 @@ interface Link {
 
 const Canvas = () => {
 
-    
+    // variable qui doivent-être déclarées 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [zoom, setZoom] = useState(1);
 
@@ -28,7 +28,6 @@ const Canvas = () => {
     const [links, setLinks] = useState<Link[]>([]);
 
     const [nodeStyles, setNodeStyles] = useState<Record<number, { bold: boolean; italic: boolean; underline: boolean }>>({});
-
     const [isDragging, setIsDragging] = useState(false);
     const [draggingNodeId, setDraggingNodeId] = useState<number | null>(null);
     const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
@@ -40,10 +39,10 @@ const Canvas = () => {
 
 
 
+    // logique Node et Link
     const addNode = (node: Node) => {
         setNodes((prevNodes) => [...prevNodes, node]);
     };
-
     const handleAddNode = (position: string) => {
         if (selectedNodeId === null) return;
     
@@ -86,8 +85,9 @@ const Canvas = () => {
         };
 
         setLinks((prevLinks) => [...prevLinks, newLink]);
-    };
 
+        setSelectedNodeId(newNodeId);
+    };
     const deleteSelectedNode = useCallback(() => {
         if (selectedNodeId === null) return;
         if (selectedNodeId === 0) return;
@@ -128,7 +128,11 @@ const Canvas = () => {
 
         setSelectedNodeId(null);
     }, [selectedNodeId, links, nodes]);
-
+    const handleConnectNode = useCallback(() => {
+        if (selectedNodeId !== null) {
+            setConnectingNodeId(selectedNodeId);
+        }
+    }, [selectedNodeId]);
     const drawLinks = useCallback(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
@@ -178,98 +182,10 @@ const Canvas = () => {
         ctx.restore();
     }, [zoom, links, nodes]);
     
-    const handleConnectNode = useCallback(() => {
-        if (selectedNodeId !== null) {
-            setConnectingNodeId(selectedNodeId);
-        }
-    }, [selectedNodeId]);
-
-    const handleStyleChange = (nodeId: number, styles: { bold?: boolean; italic?: boolean; underline?: boolean }) => {
-        setNodeStyles(prev => ({
-            ...prev,
-            [nodeId]: { ...(prev[nodeId] || { bold: false, italic: false, underline: false }), ...styles }
-        }));
-    };
-
-    const changeNodeColor = (nodeId: number, newColor: string) => {
-        setNodes(prevNodes => 
-            prevNodes.map(node => 
-                node.id === nodeId 
-                    ? { ...node, color: newColor } 
-                    : node
-            )
-        );
-    };
-
-    const handleZoomIn = () => {
-        setZoom(prevZoom => Math.min(prevZoom + 0.1, 2));
-    };
-
-    const handleZoomOut = () => {
-        setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.5));
-    };
-
-    const handleKeyPress = useCallback((event: KeyboardEvent) => {
-        if (event.key === 'Delete') {
-            deleteSelectedNode();
-        }
-    }, [deleteSelectedNode]);
-
+    // logique click de la souris et touche pressée
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (e.button === 2) return; 
     };
-
-    const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
-        const target = e.target as HTMLElement;
-        if (target.closest('button') || target.closest('.node-box') || target.closest('.bp-box')) {
-            return;
-        }
-        setSelectedNodeId(null);
-        setConnectingNodeId(null);
-
-    };
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDragging || draggingNodeId === null) return;
-        const { clientX, clientY } = e;
-        const canvasRect = canvasRef.current?.getBoundingClientRect();
-        if (!canvasRect) return;
-        const offsetX = (clientX - canvasRect.left) / zoom;
-        const offsetY = (clientY - canvasRect.top) / zoom;
-        setNodes((prevNodes) => prevNodes.map(node => 
-            node.id === draggingNodeId ? { ...node, x: offsetX, y: offsetY } : node
-        ));
-
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-        setDraggingNodeId(null);
-
-    };
-
-    const handleNodeDoubleClick = (nodeId: number, text: string) => {
-        setEditingNodeId(nodeId);
-        setEditingText(text === 'New idea' ? '' : text);
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditingText(e.target.value);
-    };
-
-    const handleInputBlur = () => {
-        if (editingNodeId !== null) {
-            if (editingText.trim() === '') {
-                setNodes((prevNodes) => prevNodes.filter(node => node.id !== editingNodeId));
-            } else {
-                setNodes((prevNodes) => prevNodes.map(node => 
-                    node.id === editingNodeId ? { ...node, text: editingText } : node
-                ));
-            }
-            setEditingNodeId(null);
-        }
-    };
-
     const handleNodeMouseDown = (
         e: React.MouseEvent<HTMLDivElement>,
         nodeId: number,
@@ -292,7 +208,44 @@ const Canvas = () => {
 
         }
     };
+    const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('button') || target.closest('.node-box') || target.closest('.bp-box')) {
+            return;
+        }
+        setSelectedNodeId(null);
+        setConnectingNodeId(null);
 
+    };
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        if (!isDragging || draggingNodeId === null) return;
+        const { clientX, clientY } = e;
+        const canvasRect = canvasRef.current?.getBoundingClientRect();
+        if (!canvasRect) return;
+        const offsetX = (clientX - canvasRect.left) / zoom;
+        const offsetY = (clientY - canvasRect.top) / zoom;
+        setNodes((prevNodes) => prevNodes.map(node => 
+            node.id === draggingNodeId ? { ...node, x: offsetX, y: offsetY } : node
+        ));
+        
+
+    };
+    const handleMouseUp = () => {
+    setIsDragging(false);
+    setDraggingNodeId(null);
+    setIsNodeDragging(false);
+    };
+    const handleNodeDoubleClick = (nodeId: number, text: string) => {
+        setEditingNodeId(nodeId);
+        setEditingText(text === 'New idea' ? '' : text);
+    };
+    const handleKeyPress = useCallback((event: KeyboardEvent) => {
+        if (event.key === 'Delete') {
+            deleteSelectedNode();
+        }
+    }, [deleteSelectedNode]);
+
+    // logique bouton fonctionnalitée
     const handleExport = () => {
         const data = JSON.stringify({ nodes, links });
         const blob = new Blob([data], { type: 'application/json' });
@@ -303,7 +256,6 @@ const Canvas = () => {
         a.click();
         URL.revokeObjectURL(url);
     };
-
     const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -319,7 +271,44 @@ const Canvas = () => {
             reader.readAsText(file);
         }
     };
+    const handleZoomIn = () => {
+        setZoom(prevZoom => Math.min(prevZoom + 0.1, 2));
+    };
+    const handleZoomOut = () => {
+        setZoom(prevZoom => Math.max(prevZoom - 0.1, 0.5));
+    };
+    const handleStyleChange = (nodeId: number, styles: { bold?: boolean; italic?: boolean; underline?: boolean }) => {
+        setNodeStyles(prev => ({
+            ...prev,
+            [nodeId]: { ...(prev[nodeId] || { bold: false, italic: false, underline: false }), ...styles }
+        }));
+    };
+    const changeNodeColor = (nodeId: number, newColor: string) => {
+        setNodes(prevNodes => 
+            prevNodes.map(node => 
+                node.id === nodeId 
+                    ? { ...node, color: newColor } 
+                    : node
+            )
+        );
+    };
 
+    // logique ???
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEditingText(e.target.value);
+    };
+    const handleInputBlur = () => {
+        if (editingNodeId !== null) {
+            if (editingText.trim() === '') {
+                setNodes((prevNodes) => prevNodes.filter(node => node.id !== editingNodeId));
+            } else {
+                setNodes((prevNodes) => prevNodes.map(node => 
+                    node.id === editingNodeId ? { ...node, text: editingText } : node
+                ));
+            }
+            setEditingNodeId(null);
+        }
+    };
 
 
     useEffect(() => {
@@ -396,7 +385,6 @@ const Canvas = () => {
                 onImport={handleImport}
                 canvasRef={canvasRef}
             />
-            
             <div
                 id="mindapp-container"
                 className="relative flex-grow bg-gray-50"
@@ -411,13 +399,16 @@ const Canvas = () => {
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full"
+                    style={{ 
+                        width: '100%',
+                        height: '100%',
+                        display: 'block'
+                    }}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                 />
-
                 {nodes.map((node) => (
-                    
                     <div
                         key={node.id}
                         className={`node-box absolute px-4 py-2 rounded-lg shadow-md transition-shadow cursor-pointer ${
@@ -452,45 +443,43 @@ const Canvas = () => {
                             <span>{node.text}</span>
                         )}
                     
-                    {selectedNodeId === node.id && (
-                        <div className='absolute inset-0 flex items-center justify-center'>
-                            {/* Top button */}
-                            <button 
-                                onClick={() => handleAddNode('bottom')}
-                                className='absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
-                            >
-                                +
-                            </button>
-                            
-                            {/* Bottom button */}
-                            <button 
-                                onClick={() => handleAddNode('top')}
-                                className='absolute bottom-0 left-1/2 translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
-                            >
-                                +
-                            </button>
-                            
-                            {/* Left button */}
-                            <button 
-                                onClick={() => handleAddNode('left')}
-                                className='absolute left-0 top-1/2 -translate-x-8 -translate-y-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700 items-center justify-center'
-                            >
-                                +
-                            </button>
-                            
-                            {/* Right button */}
-                            <button 
-                                onClick={() => handleAddNode('right')}
-                                className='absolute right-0 top-1/2 translate-x-8 -translate-y-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
-                            >
-                                +
-                            </button>
-                        </div>
-                    )}
-                    
+                        {selectedNodeId === node.id && (
+                            <div className='absolute inset-0 flex items-center justify-center'>
+                                {/* Top button */}
+                                <button 
+                                    onClick={() => handleAddNode('bottom')}
+                                    className='absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
+                                >
+                                    +
+                                </button>
+                                
+                                {/* Bottom button */}
+                                <button 
+                                    onClick={() => handleAddNode('top')}
+                                    className='absolute bottom-0 left-1/2 translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
+                                >
+                                    +
+                                </button>
+                                
+                                {/* Left button */}
+                                <button 
+                                    onClick={() => handleAddNode('left')}
+                                    className='absolute left-0 top-1/2 -translate-x-8 -translate-y-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700 items-center justify-center'
+                                >
+                                    +
+                                </button>
+                                
+                                {/* Right button */}
+                                <button 
+                                    onClick={() => handleAddNode('right')}
+                                    className='absolute right-0 top-1/2 translate-x-8 -translate-y-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
+                                >
+                                    +
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ))}
-
             </div>
         </div>
     );
