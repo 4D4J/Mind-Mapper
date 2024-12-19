@@ -1,5 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import Toolbar from '../components/Utilities/Toolbar';
+import NodeMenu from '../components/Utilities/NodeMenu';
+
 
 interface Node {
     id: number;
@@ -25,6 +27,7 @@ const Canvas = () => {
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
 
+    const [nodeStyles, setNodeStyles] = useState<Record<number, { bold: boolean; italic: boolean; underline: boolean }>>({});
 
     const [isDragging, setIsDragging] = useState(false);
     const [draggingNodeId, setDraggingNodeId] = useState<number | null>(null);
@@ -85,8 +88,6 @@ const Canvas = () => {
         setLinks((prevLinks) => [...prevLinks, newLink]);
     };
 
-
-
     const deleteSelectedNode = useCallback(() => {
         if (selectedNodeId === null) return;
         if (selectedNodeId === 0) return;
@@ -127,8 +128,6 @@ const Canvas = () => {
 
         setSelectedNodeId(null);
     }, [selectedNodeId, links, nodes]);
-
-
 
     const drawLinks = useCallback(() => {
         const canvas = canvasRef.current;
@@ -185,6 +184,12 @@ const Canvas = () => {
         }
     }, [selectedNodeId]);
 
+    const handleStyleChange = (nodeId: number, styles: { bold?: boolean; italic?: boolean; underline?: boolean }) => {
+        setNodeStyles(prev => ({
+            ...prev,
+            [nodeId]: { ...(prev[nodeId] || { bold: false, italic: false, underline: false }), ...styles }
+        }));
+    };
 
     const changeNodeColor = (nodeId: number, newColor: string) => {
         setNodes(prevNodes => 
@@ -207,13 +212,8 @@ const Canvas = () => {
     const handleKeyPress = useCallback((event: KeyboardEvent) => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
-
         }
-        if (event.key === 'l') {
-            handleConnectNode();
-
-        }
-    }, [deleteSelectedNode, handleConnectNode]);
+    }, [deleteSelectedNode]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         if (e.button === 2) return; 
@@ -320,6 +320,8 @@ const Canvas = () => {
         }
     };
 
+
+
     useEffect(() => {
         drawLinks();
         
@@ -401,6 +403,11 @@ const Canvas = () => {
                 onContextMenu={(e) => e.preventDefault()}
                 onClick={handleClickOutside}
             >
+                <NodeMenu
+                    selectedNodeId={selectedNodeId}
+                    onColorChange={changeNodeColor}
+                    onStyleChange={handleStyleChange}
+                />
                 <canvas
                     ref={canvasRef}
                     className="absolute inset-0 w-full h-full"
@@ -422,7 +429,12 @@ const Canvas = () => {
                             left: `${node.x * zoom}px`,
                             top: `${node.y * zoom}px`,
                             transform: `translate(-50%, -50%) scale(${zoom})`,
+                            userSelect: 'none',
                             backgroundColor: node.color || '#fff',
+                            fontWeight: nodeStyles[node.id]?.bold ? 'bold' : 'normal',
+                            fontStyle: nodeStyles[node.id]?.italic ? 'italic' : 'normal',
+                            textDecoration: nodeStyles[node.id]?.underline ? 'underline' : 'none',
+                            
                         }}
                         onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                         onDoubleClick={() => handleNodeDoubleClick(node.id, node.text)}
@@ -444,7 +456,7 @@ const Canvas = () => {
                         <div className='absolute inset-0 flex items-center justify-center'>
                             {/* Top button */}
                             <button 
-                                onClick={() => handleAddNode('top')}
+                                onClick={() => handleAddNode('bottom')}
                                 className='absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
                             >
                                 +
@@ -452,7 +464,7 @@ const Canvas = () => {
                             
                             {/* Bottom button */}
                             <button 
-                                onClick={() => handleAddNode('bottom')}
+                                onClick={() => handleAddNode('top')}
                                 className='absolute bottom-0 left-1/2 translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
                             >
                                 +
@@ -486,13 +498,3 @@ const Canvas = () => {
 
 export default Canvas;
 
-
-{/* <input
-    type="color"
-    value={node.color || '#ffffff'}  
-    onChange={(e) => {
-        e.stopPropagation(); 
-        changeNodeColor(node.id, e.target.value);
-    }}
-    className="absolute top-full left-50 mt-1 ml-2"
-    /> */}
