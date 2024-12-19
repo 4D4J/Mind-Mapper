@@ -54,16 +54,16 @@ const Canvas = () => {
 
         switch (position) {
             case 'top':
-                newY += 100;  // Move 100 pixels up
+                newY += 100;  
                 break;
             case 'bottom':
-                newY -= 100;  // Move 100 pixels down
+                newY -= 100;  
                 break;
             case 'left':
-                newX -= 200;  // Move 200 pixels left
+                newX -= 200;  
                 break;
             case 'right':
-                newX += 200;  // Move 200 pixels right
+                newX += 200;  
                 break;
         }
     
@@ -227,9 +227,6 @@ const Canvas = () => {
         setSelectedNodeId(null);
         setConnectingNodeId(null);
 
-        if (!target.closest('.popup')) {
-            setPopupPosition(null);
-        }
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -443,43 +440,41 @@ const Canvas = () => {
                             <span>{node.text}</span>
                         )}
                     
-                        {selectedNodeId === node.id && (
-                            <div className='relative'>
-                                {/* <input
-                                    type="color"
-                                    value={node.color || '#ffffff'}  
-                                    onChange={(e) => {
-                                        e.stopPropagation(); 
-                                        changeNodeColor(node.id, e.target.value);
-                                    }}
-                                    className="absolute top-full left-50 mt-1 ml-2"
-                                /> */}
-                                <button 
-                                    className='absolute bottom-full left-1/2 transform -translate-x-1/2' 
-                                    onClick={() => handleAddNode('bottom')}
-                                >
-                                    +
-                                </button>
-                                <button 
-                                    className='absolute top-1/2 right-0 transform -translate-y-1/2' 
-                                    onClick={() => handleAddNode('right')}
-                                >
-                                    +
-                                </button>
-                                <button 
-                                    className='absolute top-0 left-1/2 transform -translate-x-1/2' 
-                                    onClick={() => handleAddNode('top')}
-                                >
-                                    +
-                                </button>
-                                <button 
-                                    className='absolute top-1/2 left-0 transform -translate-y-1/2' 
-                                    onClick={() => handleAddNode('left')}
-                                >
-                                    +
-                                </button>
-                            </div>
-                        )}
+                    {selectedNodeId === node.id && (
+                        <div className='absolute inset-0 flex items-center justify-center'>
+                            {/* Top button */}
+                            <button 
+                                onClick={() => handleAddNode('top')}
+                                className='absolute top-0 left-1/2 -translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
+                            >
+                                +
+                            </button>
+                            
+                            {/* Bottom button */}
+                            <button 
+                                onClick={() => handleAddNode('bottom')}
+                                className='absolute bottom-0 left-1/2 translate-y-8 -translate-x-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
+                            >
+                                +
+                            </button>
+                            
+                            {/* Left button */}
+                            <button 
+                                onClick={() => handleAddNode('left')}
+                                className='absolute left-0 top-1/2 -translate-x-8 -translate-y-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700 items-center justify-center'
+                            >
+                                +
+                            </button>
+                            
+                            {/* Right button */}
+                            <button 
+                                onClick={() => handleAddNode('right')}
+                                className='absolute right-0 top-1/2 translate-x-8 -translate-y-1/2 w-6 h-6 bg-violet-500 text-white rounded-full hover:bg-emerald-700'
+                            >
+                                +
+                            </button>
+                        </div>
+                    )}
                     
                     </div>
                 ))}
@@ -490,3 +485,14 @@ const Canvas = () => {
 };
 
 export default Canvas;
+
+
+{/* <input
+    type="color"
+    value={node.color || '#ffffff'}  
+    onChange={(e) => {
+        e.stopPropagation(); 
+        changeNodeColor(node.id, e.target.value);
+    }}
+    className="absolute top-full left-50 mt-1 ml-2"
+    /> */}
