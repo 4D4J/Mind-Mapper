@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card
 // import Canvas from './Canvas';
 
 
+
 interface User {
   pseudo: string;
   email: string;
@@ -79,6 +80,7 @@ const AuthSystem: React.FC = () => {
   if (!user) {
     return (
       <div className="flex justify-center items-center bg-gray-100 h-[600px]">
+
         <Card className="flex flex-col w-[550px] justify-center items-center">
           <CardHeader>
             <CardTitle>{isLogin ? 'Connexion' : 'Inscription'}</CardTitle>
@@ -135,6 +137,7 @@ const AuthSystem: React.FC = () => {
                 )}
               </div>
               <CardFooter className="flex justify-arround mt-4 bg-emerald-600">
+
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -156,6 +159,7 @@ const AuthSystem: React.FC = () => {
   // Écran après connexion
     return (
         <div className="flex justify-center items-center bg-gray-100 h-[600px]">
+
             <Card className="flex flex-col w-[550px] justify-center items-center">
                 <CardHeader>
                     <CardTitle>Welcome</CardTitle>

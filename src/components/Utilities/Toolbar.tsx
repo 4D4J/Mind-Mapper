@@ -3,7 +3,6 @@ import AuthSystem from './auth';
 import Export from '../Utilities/Export';
 import html2canvas from 'html2canvas';
 
-
 interface ToolbarProps {
     selectedNodeId: number | null;
 
