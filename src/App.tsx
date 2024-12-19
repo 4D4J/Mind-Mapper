@@ -1,15 +1,19 @@
-//import { useState } from 'react'
-//import reactLogo from './assets/react.svg'
-//import viteLogo from '/vite.svg'
-import Index from './components/Index'
-import Canvas from './components/Canvas'
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Canvas from './components/Canvas';
+import NotFound from './components/Utilities/NotFound';
 
 function App() {
   return (
-    <div className="w-screen h-screen">
-      <Canvas/>
-    </div>
-  )
+    <Router>
+      <div className="w-screen h-screen">
+        <Routes>
+          <Route path="" element={<Canvas />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;

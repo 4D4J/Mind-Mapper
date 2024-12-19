@@ -1,37 +1,70 @@
 import React, { useState } from 'react';
 import AuthSystem from './auth';
+import Export from '../Utilities/Export';
+import html2canvas from 'html2canvas';
 
 interface ToolbarProps {
     selectedNodeId: number | null;
+
     zoom: number;
     onDeleteNode: () => void;
     onConnectNode: () => void;
+
+
     onZoomIn: () => void;
     onZoomOut: () => void;
     onExport: () => void;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    canvasRef: React.RefObject<HTMLCanvasElement>; 
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
     selectedNodeId,
+
     zoom,
     onDeleteNode,
-    onConnectNode,
+
+
     onZoomIn,
     onZoomOut,
     onExport,
-    onImport
+    onImport,
+
 }) => {
     const [showAuth, setShowAuth] = useState(false);
-    const [showInstructions, setShowInstructions] = useState(true);
+    const [showExport, setShowExport] = useState(false);
 
     const handleAccountClick = () => {
         setShowAuth(true);
     };
 
-    const handleHideInstructions = () => {
-        setShowInstructions(false);
+    const handleExportClick = () => {
+        setShowExport(true);
     };
+
+    const handleCloseExport = () => {
+        setShowExport(false);
+    };
+
+    const handleExport_JSON = () => {
+        onExport();
+        setShowExport(false);
+    };
+
+    const handleExport_PICTURE = () => {
+        const element = document.getElementById('mindapp-container');
+        if (element) {
+            html2canvas(element).then((canvas) => {
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');   
+                link.href = dataURL;
+                link.download = 'mindapp.png';
+                link.click();
+            });
+        }
+        setShowExport(false);
+    };
+    
 
     return (
         <>
@@ -61,10 +94,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     )}
                 </>
                 <button
-                    onClick={onDeleteNode}
+                    onClick={onDeleteNode }
                     disabled={selectedNodeId === null}
                     className={` flex flex-row justify-center items-center px-4 py-2 rounded-lg ${
-                        selectedNodeId === null
+                        selectedNodeId === null 
                             ? 'bg-gray-200 cursor-not-allowed'
                             : 'bg-red-500 hover:bg-red-600 text-white'
                     } transition-colors`}
@@ -73,19 +106,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     Delete Node
                 </button>
                 <button
-                    onClick={onConnectNode}
-                    disabled={selectedNodeId === null}
-                    className={` flex flex-row justify-center items-center px-4 py-2 rounded-lg ${
-                        selectedNodeId === null
-                            ? 'bg-gray-200 cursor-not-allowed'
-                            : 'bg-teal-600 hover:bg-teal-800 text-white'
-                    } transition-colors`}
-                >
-                    <img src="../img/icon/connect_icon.svg" alt="Connect Node" />
-                    Connect node
-                </button>
-                <button
-                    onClick={onExport}
+                    onClick={handleExportClick}
                     className=" flex flex-row justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-colors"
                 >
                     <img src="../img/icon/save_icon.svg" alt="Export MindApp" />
@@ -116,33 +137,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     Zoom -
                 </button>
                 <span className="self-center">
-                    Zoom: {Math.round(zoom * 100)}%
+                    Zoom: {Math.round(zoom * 100)}
                 </span>
             </div>
 
-            {/* Instructions */}
-            {showInstructions && (
-                <div className="bg-gray-100 p-4 relative">
-                    <button
-                        onClick={handleHideInstructions}
-                        className="absolute top-2 right-2 text-neutral-950 focus:outline-none  font-bold"
-                        aria-label="Close instruction"
-                    >
-                        &#10005;
-                    </button>
-                    <h1 className="text-xl font-bold">Instructions</h1>
-                    <ul className="list-disc list-inside mt-2">
-                        <li>Right Click to add a Node</li>
-                        <li>Drag and drop a Node to move it</li>
-                        <li>Double-click on a Node to edit the default text</li>
-                        <li>Delete a Node by selecting it and clicking on the "Delete Node"</li>
-                        <li>Connect Nodes by selecting the start Node, clicking on "Connect Node" and then selecting the end Node</li>
-                        <li>Change the color of a Node by selecting it and then clicking on the color picker</li>
-                        <li>Use the button "Zoom +" and "Zoom -" to zoom in and out</li>
-                        <li>Export your MindApp by clicking on "Export MindApp"</li>
-                        <li>Import a MindApp by clicking on "Import MindApp"</li>
-                    </ul>
-                </div>
+            
+            {/* Export Modal */}
+            {showExport && (
+                <Export
+                    onClose={handleCloseExport}
+                    onExport_JSON={handleExport_JSON}
+                    onExport_PNG={handleExport_PICTURE}
+                />
             )}
         </>
     );

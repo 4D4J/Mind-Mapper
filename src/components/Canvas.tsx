@@ -14,100 +14,177 @@ interface Link {
     target: number;
 }
 
+
+
 const Canvas = () => {
+
+    
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDragging, setIsDragging] = useState(false);
+    const [zoom, setZoom] = useState(1);
+
     const [nodes, setNodes] = useState<Node[]>([]);
     const [links, setLinks] = useState<Link[]>([]);
+
+
+    const [isDragging, setIsDragging] = useState(false);
     const [draggingNodeId, setDraggingNodeId] = useState<number | null>(null);
     const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
     const [editingNodeId, setEditingNodeId] = useState<number | null>(null);   
     const [editingText, setEditingText] = useState<string>('');
-    const [zoom, setZoom] = useState(1);
     const [connectingNodeId, setConnectingNodeId] = useState<number | null>(null);
+
+    const hasInitialNodeBeenAdded = useRef(false);
+
+
 
     const addNode = (node: Node) => {
         setNodes((prevNodes) => [...prevNodes, node]);
     };
 
-    const deleteSelectedNode = () => {
+    const handleAddNode = (position: string) => {
         if (selectedNodeId === null) return;
+    
+        const selectedNode = nodes.find(node => node.id === selectedNodeId);
+        if (!selectedNode) return;
+    
+        const newNodeId = Date.now();
+        let newX = selectedNode.x;
+        let newY = selectedNode.y;
+    
 
-        const connectedLinks = links.filter(
-            (link) =>
-                link.source === selectedNodeId || link.target === selectedNodeId
-        );
-
-        if (connectedLinks.length === 2) {
-            const [link1, link2] = connectedLinks;
-            const nodeId1 =
-                link1.source === selectedNodeId ? link1.target : link1.source;
-            const nodeId2 =
-                link2.source === selectedNodeId ? link2.target : link2.source;
-
-            if (nodeId1 !== nodeId2) {
-                const newLink: Link = {
-                    source: nodeId1,
-                    target: nodeId2,
-                };
-                setLinks((prevLinks) => [
-                    ...prevLinks.filter(
-                        (link) =>
-                            link.source !== selectedNodeId &&
-                            link.target !== selectedNodeId
-                    ),
-                    newLink,
-                ]);
-            } else {
-                setLinks((prevLinks) =>
-                    prevLinks.filter(
-                        (link) =>
-                            link.source !== selectedNodeId &&
-                            link.target !== selectedNodeId
-                    )
-                );
-            }
-        } else {
-            setLinks((prevLinks) =>
-                prevLinks.filter(
-                    (link) =>
-                        link.source !== selectedNodeId &&
-                        link.target !== selectedNodeId
-                )
-            );
+        switch (position) {
+            case 'top':
+                newY += 100;  // Move 100 pixels up
+                break;
+            case 'bottom':
+                newY -= 100;  // Move 100 pixels down
+                break;
+            case 'left':
+                newX -= 200;  // Move 200 pixels left
+                break;
+            case 'right':
+                newX += 200;  // Move 200 pixels right
+                break;
         }
+    
+        const newNode = {
+            id: newNodeId,
+            x: newX,
+            y: newY,
+            text: 'New idea',
+            color: '#FFFFFF',
+        };
+    
+        setNodes((prevNodes) => [...prevNodes, newNode]);
+    
+        const newLink: Link = {
+            source: selectedNodeId,
+            target: newNodeId,
+        };
 
-        setNodes((prevNodes) =>
-            prevNodes.filter((node) => node.id !== selectedNodeId)
-        );
-        setSelectedNodeId(null);
+        setLinks((prevLinks) => [...prevLinks, newLink]);
     };
 
-    const drawLinks = () => {
+
+
+    const deleteSelectedNode = useCallback(() => {
+        if (selectedNodeId === null) return;
+        if (selectedNodeId === 0) return;
+        
+        const connectedLinks = links.filter(
+            (link) => link.source === selectedNodeId || link.target === selectedNodeId
+        );
+    
+        if (connectedLinks.length !== 2) {return};
+
+        const node1Id = connectedLinks[0].source === selectedNodeId 
+            ? connectedLinks[0].target 
+            : connectedLinks[0].source;
+        
+        const node2Id = connectedLinks[1].source === selectedNodeId 
+            ? connectedLinks[1].target 
+            : connectedLinks[1].source;
+    
+        const newLinks = node1Id !== node2Id 
+            ? [
+                ...links.filter(
+                    (link) => 
+                        link.source !== selectedNodeId && 
+                        link.target !== selectedNodeId
+                ),
+                { source: node1Id, target: node2Id }
+            ]
+            : links.filter(
+                (link) => 
+                    link.source !== selectedNodeId && 
+                    link.target !== selectedNodeId
+            );
+
+        const updatedNodes = nodes.filter((node) => node.id !== selectedNodeId);
+
+        setNodes(updatedNodes);
+        setLinks(newLinks);
+
+        setSelectedNodeId(null);
+    }, [selectedNodeId, links, nodes]);
+
+
+
+    const drawLinks = useCallback(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!canvas || !ctx) return;
-
+    
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.scale(zoom, zoom);
 
-        links.forEach((link) => {
-            const sourceNode = nodes.find((node) => node.id === link.source);
-            const targetNode = nodes.find((node) => node.id === link.target);
+        try {
+            links.forEach((link) => {
 
-            if (sourceNode && targetNode) {
-                ctx.beginPath();
-                ctx.moveTo(sourceNode.x, sourceNode.y);
-                ctx.lineTo(targetNode.x, targetNode.y);
-                ctx.strokeStyle = '#64748b';
-                ctx.lineWidth = 2 / zoom;
-                ctx.stroke(); 
-            }
-        });
+                let sourceX, sourceY, targetX, targetY;
 
+                // Trouver les coordonnées de la source
+                const sourceNode = nodes.find((node) => node.id === link.source);
+
+                
+                if (sourceNode) {
+                    sourceX = sourceNode.x;
+                    sourceY = sourceNode.y;
+                }
+
+                // Trouver les coordonnées de la cible
+                const targetNode = nodes.find((node) => node.id === link.target);
+                
+                if (targetNode) {
+                    targetX = targetNode.x;
+                    targetY = targetNode.y;
+                } 
+                // Dessiner le lien si les coordonnées sont valides
+                if (sourceX !== undefined && sourceY !== undefined && 
+                    targetX !== undefined && targetY !== undefined) {
+                    ctx.beginPath();
+                    ctx.moveTo(sourceX, sourceY);
+                    ctx.lineTo(targetX, targetY);
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 2 / zoom;
+                    ctx.stroke();
+                }
+            });
+        
+        } catch (error) {
+            console.error('Erreur lors du dessin des liens :', error);
+        }
+    
         ctx.restore();
-    };
+    }, [zoom, links, nodes]);
+    
+    const handleConnectNode = useCallback(() => {
+        if (selectedNodeId !== null) {
+            setConnectingNodeId(selectedNodeId);
+        }
+    }, [selectedNodeId]);
+
 
     const changeNodeColor = (nodeId: number, newColor: string) => {
         setNodes(prevNodes => 
@@ -130,30 +207,29 @@ const Canvas = () => {
     const handleKeyPress = useCallback((event: KeyboardEvent) => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
+
         }
-        console.log(event.key);
-    }, [deleteSelectedNode]);
+        if (event.key === 'l') {
+            handleConnectNode();
+
+        }
+    }, [deleteSelectedNode, handleConnectNode]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (e.button === 2) {
-            const { offsetX, offsetY } = e.nativeEvent;
-            const newNode = {
-                id: Date.now(),
-                x: offsetX / zoom,
-                y: offsetY / zoom,
-                text: 'New idea',
-                color: '#FFFFFF',
-            };
-            addNode(newNode);
-        }
+        if (e.button === 2) return; 
     };
 
     const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        if (target.closest('button') || target.closest('.node-box')) {
+        if (target.closest('button') || target.closest('.node-box') || target.closest('.bp-box')) {
             return;
         }
         setSelectedNodeId(null);
+        setConnectingNodeId(null);
+
+        if (!target.closest('.popup')) {
+            setPopupPosition(null);
+        }
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -166,11 +242,13 @@ const Canvas = () => {
         setNodes((prevNodes) => prevNodes.map(node => 
             node.id === draggingNodeId ? { ...node, x: offsetX, y: offsetY } : node
         ));
+
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
         setDraggingNodeId(null);
+
     };
 
     const handleNodeDoubleClick = (nodeId: number, text: string) => {
@@ -197,7 +275,7 @@ const Canvas = () => {
 
     const handleNodeMouseDown = (
         e: React.MouseEvent<HTMLDivElement>,
-        nodeId: number
+        nodeId: number,
     ) => {
         e.stopPropagation();
         if (connectingNodeId !== null) {
@@ -211,14 +289,10 @@ const Canvas = () => {
             setConnectingNodeId(null);
         } else {
             setDraggingNodeId(nodeId);
-            setIsDragging(true);
             setSelectedNodeId(nodeId);
-        }
-    };
 
-    const handleConnectNode = () => {
-        if (selectedNodeId !== null) {
-            setConnectingNodeId(selectedNodeId);
+            setIsDragging(true);
+
         }
     };
 
@@ -290,22 +364,42 @@ const Canvas = () => {
             window.removeEventListener('mousemove', handleWindowMouseMove);
             window.removeEventListener('keydown', handleKeyPress);
         };
-    }, [isDragging, draggingNodeId, zoom, handleKeyPress, links, nodes]);
+    }, [isDragging, draggingNodeId,  zoom, handleKeyPress, links, nodes, drawLinks]);
+
 
     return (
+    
+        useEffect(() => {
+            if (!hasInitialNodeBeenAdded.current && nodes.length === 0) {
+                const defaultNode = {
+                    id: 0,
+                    x: 750,  
+                    y: 350,  
+                    text: 'Start Here',
+                    color: '#FFFFFF',
+                    deleteable: false,
+                };
+                addNode(defaultNode);
+                hasInitialNodeBeenAdded.current = true;
+            }
+        }, [nodes.length]),
+
         <div className="flex flex-col h-screen">
             <Toolbar 
                 selectedNodeId={selectedNodeId}
                 zoom={zoom}
                 onDeleteNode={deleteSelectedNode}
                 onConnectNode={handleConnectNode}
+
                 onZoomIn={handleZoomIn}
                 onZoomOut={handleZoomOut}
                 onExport={handleExport}
                 onImport={handleImport}
+                canvasRef={canvasRef}
             />
-
+            
             <div
+                id="mindapp-container"
                 className="relative flex-grow bg-gray-50"
                 onContextMenu={(e) => e.preventDefault()}
                 onClick={handleClickOutside}
@@ -319,6 +413,7 @@ const Canvas = () => {
                 />
 
                 {nodes.map((node) => (
+                    
                     <div
                         key={node.id}
                         className={`node-box absolute px-4 py-2 rounded-lg shadow-md transition-shadow cursor-pointer ${
@@ -347,20 +442,48 @@ const Canvas = () => {
                         ) : (
                             <span>{node.text}</span>
                         )}
-
+                    
                         {selectedNodeId === node.id && (
-                            <input
-                                type="color"
-                                value={node.color || '#ffffff'}  
-                                onChange={(e) => {
-                                    e.stopPropagation(); 
-                                    changeNodeColor(node.id, e.target.value);
-                                }}
-                                className="absolute top-full left-0 mt-1 ml-2"
-                            />
+                            <div className='relative'>
+                                {/* <input
+                                    type="color"
+                                    value={node.color || '#ffffff'}  
+                                    onChange={(e) => {
+                                        e.stopPropagation(); 
+                                        changeNodeColor(node.id, e.target.value);
+                                    }}
+                                    className="absolute top-full left-50 mt-1 ml-2"
+                                /> */}
+                                <button 
+                                    className='absolute bottom-full left-1/2 transform -translate-x-1/2' 
+                                    onClick={() => handleAddNode('bottom')}
+                                >
+                                    +
+                                </button>
+                                <button 
+                                    className='absolute top-1/2 right-0 transform -translate-y-1/2' 
+                                    onClick={() => handleAddNode('right')}
+                                >
+                                    +
+                                </button>
+                                <button 
+                                    className='absolute top-0 left-1/2 transform -translate-x-1/2' 
+                                    onClick={() => handleAddNode('top')}
+                                >
+                                    +
+                                </button>
+                                <button 
+                                    className='absolute top-1/2 left-0 transform -translate-y-1/2' 
+                                    onClick={() => handleAddNode('left')}
+                                >
+                                    +
+                                </button>
+                            </div>
                         )}
+                    
                     </div>
                 ))}
+
             </div>
         </div>
     );
