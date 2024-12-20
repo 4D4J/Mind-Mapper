@@ -125,7 +125,6 @@ const Canvas = () => {
 
         setNodes(updatedNodes);
         setLinks(newLinks);
-
         setSelectedNodeId(null);
     }, [selectedNodeId, links, nodes]);
     const handleConnectNode = useCallback(() => {
@@ -210,7 +209,7 @@ const Canvas = () => {
     };
     const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        if (target.closest('button') || target.closest('.node-box') || target.closest('.bp-box')) {
+        if (target.closest('button') || target.closest('.node-box')) {
             return;
         }
         setSelectedNodeId(null);
@@ -355,7 +354,6 @@ const Canvas = () => {
 
 
     return (
-    
         useEffect(() => {
             if (!hasInitialNodeBeenAdded.current && nodes.length === 0) {
                 const defaultNode = {
