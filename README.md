@@ -7,7 +7,7 @@
 
 ## What is MindMapper ?
 
-Mind Mapper is an intuitive and lightweight application for organizing your ideas and projects in the form of mind maps. Whether you're a student, professional, or creative, this tool helps you visualize your thoughts, structure your plans, and collaborate effectively.
+Mind Mapper is an intuitive and lightweight application for organizing your ideas and projects in the form of mind maps. Whether you're a student, professional, or creative, this tool helps you visualize your thoughts, structure your plans, and collaborate effectively. Of course, it's only available for PC 
 
 Key Features:
   - ⚒️ Create interactive mind maps.
