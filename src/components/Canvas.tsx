@@ -10,7 +10,6 @@ interface Node {
     text: string;
     color: string;
 }
-
 interface Link {
     source: number;
     target: number;
@@ -125,7 +124,6 @@ const Canvas = () => {
 
         setNodes(updatedNodes);
         setLinks(newLinks);
-
         setSelectedNodeId(null);
     }, [selectedNodeId, links, nodes]);
     const handleConnectNode = useCallback(() => {
@@ -210,7 +208,7 @@ const Canvas = () => {
     };
     const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
         const target = e.target as HTMLElement;
-        if (target.closest('button') || target.closest('.node-box') || target.closest('.bp-box')) {
+        if (target.closest('button') || target.closest('.node-box')) {
             return;
         }
         setSelectedNodeId(null);
@@ -234,15 +232,16 @@ const Canvas = () => {
     setIsDragging(false);
     setDraggingNodeId(null);
     };
-    const handleNodeDoubleClick = (nodeId: number, text: string) => {
-        setEditingNodeId(nodeId);
-        setEditingText(text === 'New idea' ? '' : text);
-    };
     const handleKeyPress = useCallback((event: KeyboardEvent) => {
         if (event.key === 'Delete') {
             deleteSelectedNode();
         }
     }, [deleteSelectedNode]);
+    const handleNodeTextChange = (nodeId: number, newText: string) => {
+        setNodes((prevNodes) => prevNodes.map(node => 
+            node.id === nodeId ? { ...node, text: newText } : node
+        ));
+    };
 
     // logique bouton fonctionnalitée
     const handleExport = () => {
@@ -355,7 +354,6 @@ const Canvas = () => {
 
 
     return (
-    
         useEffect(() => {
             if (!hasInitialNodeBeenAdded.current && nodes.length === 0) {
                 const defaultNode = {
@@ -394,6 +392,8 @@ const Canvas = () => {
                     selectedNodeId={selectedNodeId}
                     onColorChange={changeNodeColor}
                     onStyleChange={handleStyleChange}
+                    onTextChange={handleNodeTextChange}
+                    selectedNodeText={nodes.find(node => node.id === selectedNodeId)?.text || ''}
                 />
                 <canvas
                     ref={canvasRef}
@@ -427,7 +427,6 @@ const Canvas = () => {
                             
                         }}
                         onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
-                        onDoubleClick={() => handleNodeDoubleClick(node.id, node.text)}
                     >
                         {editingNodeId === node.id ? (
                             <input
@@ -439,7 +438,7 @@ const Canvas = () => {
                                 className="border border-gray-300 rounded px-2 py-1 w-full"
                             />
                         ) : (
-                            <span>{node.text}</span>
+                            <span className="whitespace-pre-line">{node.text}</span>
                         )}
                     
                         {selectedNodeId === node.id && (
@@ -481,9 +480,7 @@ const Canvas = () => {
                 ))}
             </div>
         </div>
-    );
+    )
 };
 
 export default Canvas;
-
-// Work in progress
