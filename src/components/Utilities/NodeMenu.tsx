@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, KeyboardEvent } from 'react';
 import { Bold, Italic, Underline } from 'lucide-react';
 
 interface NodeMenuProps {
     selectedNodeId: number | null;
     onColorChange: (nodeId: number, color: string) => void;
     onStyleChange?: (nodeId: number, styles: { bold?: boolean; italic?: boolean; underline?: boolean }) => void;
+    onTextChange: (nodeId: number, text: string) => void;
+    selectedNodeText: string;
 }
 
 interface NodeStyles {
@@ -13,24 +15,31 @@ interface NodeStyles {
     underline: boolean;
 }
 
-const NodeMenu: React.FC<NodeMenuProps> = ({ selectedNodeId, onColorChange, onStyleChange }) => {
+const NodeMenu: React.FC<NodeMenuProps> = ({ 
+    selectedNodeId, 
+    onColorChange, 
+    onStyleChange,
+    onTextChange,
+    selectedNodeText 
+}) => {
     const [customColor, setCustomColor] = useState('#FFFFFF');
     const [styles, setStyles] = useState<NodeStyles>({
         bold: false,
         italic: false,
         underline: false
     });
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(selectedNodeText);
+
+    useEffect(() => {
+        setEditText(selectedNodeText);
+    }, [selectedNodeText, selectedNodeId]);
 
     if (!selectedNodeId && selectedNodeId !== 0) return null;
 
     const predefinedColors = [
-        '#FFFFFF', // White
-        '#FDE68A', // Light Yellow
-        '#BBF7D0', // Light Green
-        '#BFDBFE', // Light Blue
-        '#DDD6FE', // Light Purple
-        '#FECACA', // Light Red
-        '#E5E7EB', // Light Gray
+        '#FFFFFF', '#FDE68A', '#BBF7D0', '#BFDBFE', 
+        '#DDD6FE', '#FECACA', '#E5E7EB'
     ];
 
     const handleStyleChange = (e: React.MouseEvent, styleType: keyof NodeStyles) => {
@@ -57,6 +66,24 @@ const NodeMenu: React.FC<NodeMenuProps> = ({ selectedNodeId, onColorChange, onSt
         onColorChange(selectedNodeId, color);
     };
 
+    const handleTextClick = () => {
+        setIsEditing(true);
+        setEditText(selectedNodeText);
+    };
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newText = e.target.value;
+        setEditText(newText);
+        onTextChange(selectedNodeId, newText);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            setIsEditing(false);
+        }
+    };
+
     const handleMenuClick = (e: React.MouseEvent) => {
         e.stopPropagation();
     };
@@ -66,9 +93,24 @@ const NodeMenu: React.FC<NodeMenuProps> = ({ selectedNodeId, onColorChange, onSt
             className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg z-50"
             onClick={handleMenuClick}
         >
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Node Customisation</h3>
+            {isEditing ? (
+                <textarea
+                    value={editText}
+                    onChange={handleTextChange}
+                    onKeyDown={handleKeyDown}
+                    autoFocus
+                    rows={3}
+                    className="w-full mb-3 p-1 border border-gray-300 rounded resize-none"
+                />
+            ) : (
+                <h3 
+                    className="text-sm font-medium text-gray-700 mb-3 cursor-pointer hover:bg-gray-100 p-1 rounded whitespace-pre-line"
+                    onClick={handleTextClick}
+                >
+                    {selectedNodeText}
+                </h3>
+            )}
             
-            {/* Style Controls */}
             <div className="mb-4 flex gap-2 pb-3 border-b border-gray-200">
                 <button
                     onClick={(e) => handleStyleChange(e, 'bold')}
@@ -93,7 +135,6 @@ const NodeMenu: React.FC<NodeMenuProps> = ({ selectedNodeId, onColorChange, onSt
                 </button>
             </div>
 
-            {/* Color Controls */}
             <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
                     {predefinedColors.map((color, index) => (
@@ -106,13 +147,12 @@ const NodeMenu: React.FC<NodeMenuProps> = ({ selectedNodeId, onColorChange, onSt
                     ))}
                 </div>
                 
-                {/* Custom Color Picker */}
                 <div className="flex items-center gap-2">
                     <input
                         type="color"
                         value={customColor}
+                        onClick={e => e.stopPropagation()}
                         onChange={handleCustomColorChange}
-                        onClick={handleMenuClick}
                         className="w-8 h-8 rounded cursor-pointer"
                     />
                     <span className="text-xs text-gray-600">Custom color</span>
